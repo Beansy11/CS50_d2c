@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "outDir": "out",
+    "rootDir": ".",
+    "lib": [
+      "ES2022"
+    ],
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src",
+    "website-editor/src"
+  ],
+  "exclude": [
+    "node_modules",
+    "website-editor/media",
+    ".vscode-test"
+  ]
+}

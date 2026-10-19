@@ -1,0 +1,171 @@
+// Unit tests for the page width of a project Draw2Code made: src/pageWidth.ts,
+// the label that keeps it (src/projectFormat.ts) and the project saved with
+// it (src/siteProject.ts), compiled to out/ by npm test's pretest.
+//
+// CS50 citation: I did not write these tests. I had an AI coding agent read
+// my code and write tests for it, to save time, and it put this file in
+// website-editor/test/. The code it tests is mine; the tests are the agent's.
+// I run them with npm test.
+
+const { describe, it } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const W = require('../../out/website-editor/src/pageWidth.js');
+const F = require('../../out/src/projectFormat.js');
+const S = require('../../out/website-editor/src/siteProject.js');
+const M = require('../media/model.js');
+const H = require('../media/generators/html.js');
+
+const page = (name, elements = []) => ({ name, title: 'Home', color: '#ffffff', elements, open: true });
+const design = (pages, extra = {}) => ({ version: 2, active: pages[0].name, pages, ...extra });
+const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'd2c-width-'));
+
+describe('the page width\'s limits', () => {
+    it('are the model\'s: 1440 until changed, a phone\'s to a 4K screen\'s', () => {
+        assert.equal(W.PAGE_WIDTH, 1440);
+        assert.equal(W.PAGE_WIDTH, M.PAGE_WIDTH);
+        assert.equal(W.PAGE_WIDTH_MIN, M.PAGE_WIDTH_MIN);
+        assert.equal(W.PAGE_WIDTH_MAX, M.PAGE_WIDTH_MAX);
+    });
+
+    it('a width held in a label or a design reads the same here and in the generator', () => {
+        for (const value of [undefined, null, '', 'wide', NaN, 1200, '1200', 1199.6, 100, 99999, -5, 1440]) {
+            assert.equal(W.pageWidthOf(value), M.pageWidthOf(value), String(value));
+        }
+        assert.equal(W.pageWidthOf(undefined), 1440);
+        assert.equal(W.pageWidthOf(99999), 3840);
+        assert.equal(W.pageWidthOf(100), 320);
+    });
+});
+
+describe('checkPageWidth: a width as typed', () => {
+    it('takes a whole number of px, with or without "px"', () => {
+        assert.deepEqual(W.checkPageWidth('1200'), { width: 1200 });
+        assert.deepEqual(W.checkPageWidth(' 1200 px '), { width: 1200 });
+        assert.deepEqual(W.checkPageWidth('1280PX'), { width: 1280 });
+        assert.deepEqual(W.checkPageWidth('320'), { width: 320 });
+        assert.deepEqual(W.checkPageWidth('3840'), { width: 3840 });
+    });
+
+    it('refuses anything else, and says why', () => {
+        for (const text of ['', 'wide', '12em', '-1200', '1,200', '50%', '1200 1300']) {
+            assert.ok('problem' in W.checkPageWidth(text), text);
+        }
+        assert.match(W.checkPageWidth('1200.5').problem, /whole number/);
+        assert.match(W.checkPageWidth('319').problem, /320 to 3840/);
+        assert.match(W.checkPageWidth('3841').problem, /320 to 3840/);
+    });
+});
+
+describe('setStylesheetPageWidth: every page laid out for a new width', () => {
+    const generated = H.generateProject(design([page('index.html', [M.createElement(1, 'rect', { x: 10, y: 20, w: 100, h: 50 }, M.DEFAULT_STYLE)])])).css;
+
+    it('the generated stylesheet says the width it was made with', () => {
+        assert.equal(W.stylesheetPageWidth(generated), 1440);
+        assert.equal(W.stylesheetPageWidth(H.generateProject(design([page('index.html')], { pageWidth: 1200 })).css), 1200);
+    });
+
+    it('changes only the width in the .page rule; the rest of the file is byte for byte as it was', () => {
+        const out = W.setStylesheetPageWidth(generated, 1200);
+        assert.equal(out.changed, true);
+        assert.equal(out.css, generated.replace('.page {\n  position: relative;\n  width: 1440px;', '.page {\n  position: relative;\n  width: 1200px;'));
+        assert.equal(W.stylesheetPageWidth(out.css), 1200);
+        // The generator's own rule for that width is the same.
+        assert.equal(out.css, H.generateProject(design([page('index.html', [M.createElement(1, 'rect', { x: 10, y: 20, w: 100, h: 50 }, M.DEFAULT_STYLE)])], { pageWidth: 1200 })).css);
+    });
+
+    it('back again gives the same file, and the same width changes nothing', () => {
+        const there = W.setStylesheetPageWidth(generated, 1200).css;
+        assert.equal(W.setStylesheetPageWidth(there, 1440).css, generated);
+        assert.deepEqual(W.setStylesheetPageWidth(generated, 1440), { css: generated, changed: false });
+    });
+
+    it('leaves min-width, max-width and other rules alone', () => {
+        const css = 'body {\n  min-width: max-content;\n}\n\n.page {\n  max-width: 90%;\n  width: 1440px;\n}\n\n.page > * {\n  width: 10px;\n}\n';
+        assert.equal(W.setStylesheetPageWidth(css, 1000).css, css.replace('  width: 1440px;', '  width: 1000px;'));
+    });
+
+    it('a stylesheet from before pages had a width gets one, centred, after its position', () => {
+        const old = '/* Generated by Draw2Code Web Editor */\nbody {\n  margin: 0;\n}\n\n.page {\n  position: relative;\n  min-height: 100vh;\n}\n\n.page > * {\n  position: absolute;\n}\n';
+        const out = W.setStylesheetPageWidth(old, 1440);
+        assert.equal(out.css, old.replace('.page {\n  position: relative;\n', '.page {\n  position: relative;\n  width: 1440px;\n  margin: 0 auto;\n'));
+        assert.equal(W.stylesheetPageWidth(out.css), 1440);
+    });
+
+    it('a stylesheet with no .page rule is not one it can change', () => {
+        assert.equal(W.setStylesheetPageWidth('body { margin: 0; }\n.pages { width: 10px; }\n', 1200), null);
+        assert.equal(W.stylesheetPageWidth('.page-home { width: 10px; }'), undefined);
+    });
+});
+
+describe('the project label keeps the page width', () => {
+    it('a project is saved with the width its pages were laid out for', () => {
+        const root = path.join(tmp(), 'Shop');
+        S.writeProject(root, 'Shop', design([page('index.html')], { pageWidth: 1280 }), H, 'test');
+        const label = F.readProject(root);
+        assert.equal(label.pageWidth, 1280);
+        const css = fs.readFileSync(path.join(root, 'Shop-dev', label.stylesheet), 'utf8');
+        assert.equal(W.stylesheetPageWidth(css), 1280);
+    });
+
+    it('a design that says nothing is 1440 wide, and so is a label that says nothing', () => {
+        const root = path.join(tmp(), 'Shop');
+        S.writeProject(root, 'Shop', design([page('index.html')]), H, 'test');
+        assert.equal(F.readProject(root).pageWidth, 1440);
+        const file = path.join(root, F.PROJECT_FILE);
+        const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+        delete data.pageWidth;
+        fs.writeFileSync(file, JSON.stringify(data));
+        assert.equal(F.readProject(root).pageWidth, 1440, 'an older label still reads');
+        data.pageWidth = 'wide';
+        fs.writeFileSync(file, JSON.stringify(data));
+        assert.equal(F.readProject(root).pageWidth, 1440, 'a label edited by hand still reads');
+    });
+
+    it('writePageWidth changes only the width, and only in a project\'s own label', () => {
+        const root = path.join(tmp(), 'Shop');
+        S.writeProject(root, 'Shop', design([page('index.html')]), H, 'test');
+        const file = path.join(root, F.PROJECT_FILE);
+        const before = JSON.parse(fs.readFileSync(file, 'utf8'));
+        assert.equal(F.writePageWidth(root, 1024), true);
+        assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), { ...before, pageWidth: 1024 });
+        assert.equal(F.writePageWidth(root, 1024), false, 'the same width writes nothing');
+
+        const site = tmp();
+        fs.writeFileSync(path.join(site, 'index.html'), '<p>x</p>');
+        const work = path.join(site, 'x-dev');
+        fs.mkdirSync(work);
+        F.writeImportLabel(site, work, 'test');
+        const label = fs.readFileSync(path.join(work, F.PROJECT_FILE), 'utf8');
+        assert.equal(F.writePageWidth(work, 1024), false, 'an import keeps its own layout');
+        assert.equal(fs.readFileSync(path.join(work, F.PROJECT_FILE), 'utf8'), label);
+        assert.equal(F.writePageWidth(tmp(), 1024), false, 'no label, nothing written');
+    });
+});
+
+describe('setViewportWidth: a phone asks for the page\'s width', () => {
+    const doc = (meta, html = '<html lang="en">') => `<!DOCTYPE html>\n${html}\n<head>\n  <meta charset="UTF-8">\n  ${meta}\n</head>\n<body></body>\n</html>\n`;
+
+    it('is the model\'s phone class', () => {
+        assert.equal(W.PHONE_LAYOUT_CLASS, M.PHONE_LAYOUT_CLASS);
+    });
+
+    it('changes the viewport the generator wrote, and the one older projects have', () => {
+        const generated = H.generate({ ...M.makeDesign([{ ...M.makePage('index.html'), elements: [] }], 'index.html'), pageWidth: 1200 });
+        assert.equal(W.setViewportWidth(generated, 1000), generated.replace('content="width=1200"', 'content="width=1000"'));
+        assert.equal(W.setViewportWidth(generated, 1200), generated);
+        const older = doc('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
+        assert.equal(W.setViewportWidth(older, 1440), doc('<meta name="viewport" content="width=1440">'));
+        assert.equal(W.setViewportWidth(older, 99999), doc('<meta name="viewport" content="width=3840">'), 'a width a page can have');
+    });
+
+    it('leaves a page with a phone layout, a viewport of its own, and a page with none', () => {
+        const phone = doc('<meta name="viewport" content="width=device-width, initial-scale=1.0">', `<html lang="en" class="dark ${M.PHONE_LAYOUT_CLASS}">`);
+        assert.equal(W.setViewportWidth(phone, 1440), phone);
+        const own = doc('<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">');
+        assert.equal(W.setViewportWidth(own, 1440), own);
+        assert.equal(W.setViewportWidth(doc(''), 1440), doc(''));
+    });
+});

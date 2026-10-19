@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Draw2Code Web Editor - CS50x Final Project</title>
+<style>
+  :root {
+    --bg: #070a16;
+    --panel: #0e1530;
+    --line: #23305a;
+    --text: #f8fafc;
+    --muted: #a5b0cc;
+    --accent: #2dd4bf;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: "DejaVu Sans", "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    position: relative;
+  }
+  .glow-a, .glow-b {
+    position: absolute; border-radius: 50%; filter: blur(2px);
+  }
+  .glow-a { width: 900px; height: 900px; right: -180px; top: -260px; background: #120f35; }
+  .glow-b { width: 560px; height: 560px; right: 140px; top: 360px; background: #0b2533; }
+  .card {
+    position: absolute; left: 140px; top: 150px; width: 1080px;
+  }
+  .course {
+    display: inline-block; padding: 10px 22px; border: 2px solid var(--line);
+    border-radius: 999px; background: var(--panel); color: var(--accent);
+    font-size: 26px; font-weight: 700; letter-spacing: 2px;
+  }
+  h1 { margin-top: 44px; font-size: 104px; line-height: 1.04; font-weight: 800; }
+  .tag { margin-top: 26px; font-size: 34px; color: var(--muted); line-height: 1.35; }
+  .facts { margin-top: 70px; display: grid; grid-template-columns: 260px 1fr; row-gap: 18px; font-size: 32px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { color: var(--text); font-weight: 600; }
+  .mock {
+    position: absolute; right: 150px; top: 250px; width: 520px; height: 560px;
+    border: 2px solid var(--line); border-radius: 22px; background: var(--panel);
+  }
+  .mock .bar { height: 54px; border-bottom: 2px solid var(--line); }
+  .mock .dot { position: absolute; top: 20px; width: 14px; height: 14px; border-radius: 50%; }
+  .mock .shape { position: absolute; border-radius: 10px; }
+  .mock .drag { position: absolute; border: 3px dashed var(--accent); border-radius: 10px; }
+  .mock .handle { position: absolute; width: 14px; height: 14px; background: var(--accent); border-radius: 3px; }
+  .mock .code {
+    position: absolute; left: 30px; right: 30px; bottom: 30px; padding: 18px 22px;
+    border-radius: 12px; background: #070a16; border: 2px solid var(--line);
+    font-family: "DejaVu Sans Mono", monospace; font-size: 20px; line-height: 1.5; color: var(--muted);
+  }
+  .mock .code b { color: var(--accent); font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="glow-a"></div>
+  <div class="glow-b"></div>
+
+  <div class="card">
+    <span class="course">CS50x FINAL PROJECT</span>
+    <h1>Draw2Code<br>Web Editor</h1>
+    <p class="tag">Draw a web page in VS Code. Get real HTML and CSS back.</p>
+    <dl class="facts">
+      <dt>Name</dt><dd>Carlos Andres Jusacamea Contreras</dd>
+      <dt>GitHub</dt><dd>Beansy11</dd>
+      <dt>edX</dt><dd>andres-631</dd>
+      <dt>Location</dt><dd>Nampa, ID, United States</dd>
+      <dt>Date</dt><dd>Oct 18, 2026</dd>
+    </dl>
+  </div>
+
+  <div class="mock" aria-hidden="true">
+    <div class="bar"></div>
+    <span class="dot" style="left:26px;background:#f87171"></span>
+    <span class="dot" style="left:50px;background:#fbbf24"></span>
+    <span class="dot" style="left:74px;background:#34d399"></span>
+    <div class="shape" style="left:30px;top:84px;width:300px;height:30px;background:#f8fafc"></div>
+    <div class="shape" style="left:30px;top:130px;width:220px;height:16px;background:#a5b0cc"></div>
+    <div class="shape" style="left:30px;top:170px;width:150px;height:44px;background:#2dd4bf;border-radius:22px"></div>
+    <div class="drag" style="left:270px;top:150px;width:200px;height:150px"></div>
+    <div class="handle" style="left:263px;top:143px"></div>
+    <div class="handle" style="left:463px;top:293px"></div>
+    <div class="code">&lt;div id=<b>"rect-1"</b>&gt;&lt;/div&gt;<br>#rect-1 { left: <b>270px</b>;<br>&nbsp;&nbsp;width: <b>200px</b>; }</div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Built and installed
+node_modules/
+out/
+*.vsix
+*.tsbuildinfo
+
+# VS Code writes this machine's own paths here; the extension host downloaded by tests
+.vscode/settings.json
+.vscode-test/
+
+
+# Logs and operating-system files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,98 @@
+{
+  "name": "draw2code-web-editor",
+  "displayName": "Draw2Code Web Editor",
+  "description": "Import a website and edit it in place, or draw a page on a canvas and generate its HTML/CSS.",
+  "version": "0.9.0",
+  "publisher": "beansy",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "draw2code.newDesign",
+        "title": "Draw2Code: New Design"
+      },
+      {
+        "command": "draw2code.saveDesign",
+        "title": "Draw2Code: Save Design"
+      },
+      {
+        "command": "draw2code.openEditor",
+        "title": "Draw2Code: Open Editor"
+      },
+      {
+        "command": "draw2code.importSite",
+        "title": "Draw2Code: Draw a Site in the Editor"
+      },
+      {
+        "command": "draw2code.showPreview",
+        "title": "Draw2Code: Show HTML Preview"
+      },
+      {
+        "command": "draw2code.generateHtml",
+        "title": "Draw2Code: Generate HTML"
+      },
+      {
+        "command": "draw2code.generateHtmlAs",
+        "title": "Draw2Code: Generate HTML As..."
+      },
+      {
+        "command": "draw2code.pageWidth",
+        "title": "Draw2Code: Page Width..."
+      },
+      {
+        "command": "draw2code.openSitePreview",
+        "title": "Draw2Code: Open Site Preview"
+      },
+      {
+        "command": "draw2code.applySiteChanges",
+        "title": "Draw2Code: Publish (update the final copy)"
+      },
+      {
+        "command": "draw2code.resetSiteCopy",
+        "title": "Draw2Code: Reset Working Copy"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "draw2code.project",
+        "displayName": "Draw2Code Web Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.d2c"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "configurationDefaults": {
+      "workbench.editor.customLabels.patterns": {
+        "**/.draw2code/project.d2c": "${dirname(1)}"
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "node --test \"website-editor/test/**/*.test.js\"",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.100.0",
+    "typescript": "^5.5.0"
+  },
+  "dependencies": {
+    "@types/parse5": "^6.0.3",
+    "parse5": "^6.0.1"
+  }
+}

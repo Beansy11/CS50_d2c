@@ -1,0 +1,264 @@
+/* Draw2Code Web Editor canvas page. */
+
+/* CS50 citation: the name Draw2Code Web Editor was chosen with help from
+   Claude (Anthropic AI) in October 2026, and at my direction Claude renamed
+   the project from its earlier name, HardHat Designer, throughout this file. */
+
+:root {
+    --bg: var(--vscode-editor-background);
+    --fg: var(--vscode-editor-foreground);
+    --panel: var(--vscode-sideBar-background);
+    --border: var(--vscode-panel-border);
+    --accent: var(--vscode-button-background);
+    --accent-fg: var(--vscode-button-foreground);
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--vscode-font-family);
+    font-size: 12px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+#toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    font-weight: bold;
+    white-space: nowrap;
+    margin-right: 12px;
+}
+
+.sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 6px;
+}
+
+.tool {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.tool:hover {
+    border-color: var(--accent);
+}
+
+.action {
+    background: var(--vscode-button-secondaryBackground, transparent);
+    color: var(--vscode-button-secondaryForeground, var(--fg));
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 4px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.action:hover {
+    border-color: var(--accent);
+}
+
+.action.primary {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+}
+
+.tool:disabled {
+    opacity: 0.4;
+    cursor: default;
+    border-color: var(--border);
+}
+
+.tool.active {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+}
+
+.style-ctl {
+    display: inline-flex;
+    white-space: nowrap;
+    align-items: center;
+    gap: 4px;
+    margin-right: 6px;
+}
+
+.style-ctl input[type="color"] {
+    width: 26px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: transparent;
+}
+
+.style-ctl input[type="number"] {
+    width: 42px;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--border);
+}
+
+#status-conn {
+    margin-left: auto;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+#stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Where the browser bar sits: over the top of the stage. What it looks
+   like is media/chrome.css, shared with the editor over a real page. */
+#chrome {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+}
+
+#chrome[hidden] { display: none; }
+
+#canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: default;
+}
+
+/* In-place text editor, positioned over the widget by textEditor.js. */
+#text-editor {
+    position: absolute;
+    box-sizing: border-box;
+    margin: 0;
+    border: 1px solid var(--accent);
+    outline: none;
+    z-index: 5;
+}
+
+/* Properties popup. */
+#props {
+    position: absolute;
+    width: 230px;
+    background: var(--vscode-editorWidget-background, var(--panel));
+    color: var(--fg);
+    border: 1px solid var(--vscode-editorWidget-border, var(--border));
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    z-index: 10;
+}
+
+#props-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+    font-weight: bold;
+    text-transform: capitalize;
+    cursor: move;
+    user-select: none;
+}
+
+#props-close {
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.props-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+}
+
+.props-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.props-grid label,
+.props-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.props-row > span {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#props input[type="number"],
+#props input[type="text"] {
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--border);
+    padding: 2px 4px;
+}
+
+#props input[type="number"] {
+    width: 56px;
+}
+
+#props input[type="text"] {
+    flex: 1;
+    min-width: 0;
+}
+
+#props input[type="color"] {
+    width: 26px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: transparent;
+}
+
+#statusbar {
+    display: flex;
+    gap: 20px;
+    padding: 4px 8px;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    font-family: var(--vscode-editor-font-family);
+}

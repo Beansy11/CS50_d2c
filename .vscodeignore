@@ -1,0 +1,8 @@
+.vscode/**
+src/**
+website-editor/src/**
+node_modules/**
+!node_modules/parse5/**
+tsconfig.json
+**/*.map
+website-editor/test/**
