@@ -1,0 +1,30 @@
+{
+  "format": "draw2code-project",
+  "version": 1,
+  "name": "draw2code",
+  "dev": "draw2code-dev",
+  "prod": "draw2code-prod",
+  "created": "2026-10-19T20:26:07.480Z",
+  "savedWith": "0.9.0",
+  "stylesheet": "css/style.css",
+  "pageWidth": 1440,
+  "design": {
+    "version": 2,
+    "active": "index.html",
+    "pages": [
+      {
+        "name": "index.html",
+        "title": "Home",
+        "color": "#ffffff",
+        "elements": [],
+        "open": true
+      }
+    ]
+  },
+  "editor": {
+    "tabs": [
+      "index.html"
+    ],
+    "page": "index.html"
+  }
+}
