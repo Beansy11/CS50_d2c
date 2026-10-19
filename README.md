@@ -1,5 +1,5 @@
 # Draw2Code Web Editor
-#### Video Demo:  <URL HERE>
+#### Video Demo:  https://youtu.be/S2ouUzpDFXI
 #### Description:
 
 Draw2Code Web Editor is a Visual Studio Code extension that lets you draw a web page
